@@ -1,4 +1,18 @@
-//openssl req -nodes -x509 -newkey rsa:4096 -keyout server.key -subj "/C=US/ST=Oregon/L=Portland/O=Company Name/OU=Org/CN=192.168.0.101" -out server.crt -days 365
+/*
+
+openssl req -nodes -x509 -newkey rsa:4096 -keyout server.key -subj "/C=US/ST=Oregon/L=Portland/O=Company Name/OU=Org/CN=192.168.0.101" -out server.crt -days 365
+
+https://128.110.218.254:3000/
+
+https://askubuntu.com/a/261467/1246619
+
+*/
+
+const all_args = process.argv;
+console.log("all_args ", all_args);
+
+server_ip = all_args[2]
+server_port = parseInt(all_args[3])
 
 const express = require("express");
 const path = require("path");
@@ -51,8 +65,8 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(process.env.PORT || 3000, "0.0.0.0", () => {
-  console.log("listening on *:3000");
+server.listen(process.env.PORT || server_port, server_ip, () => {
+  console.log("listening on", server_ip, server_port);
   
 });
 

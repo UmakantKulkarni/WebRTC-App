@@ -1,4 +1,7 @@
 
+const server_url = document.URL
+console.log("server_url ", server_url);
+
 var mediaRecorder;
 var recordedBlobs;
 var sourceBuffer;
@@ -22,7 +25,7 @@ const peer = new RTCPeerConnection({
 });
 
 // Connecting to socket
-const socket = io("https://192.168.0.101:3000");
+const socket = io(server_url);
 
 const onSocketConnected = async () => {
   //var mediaSource = new MediaSource();
