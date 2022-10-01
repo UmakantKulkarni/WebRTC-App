@@ -1,4 +1,4 @@
-//openssl req -nodes -x509 -newkey rsa:4096 -keyout key.pem -subj "/C=US/ST=Oregon/L=Portland/O=Company Name/OU=Org/CN=128.110.218.254" -out cert.pem -days 365
+//openssl req -nodes -x509 -newkey rsa:4096 -keyout server.key -subj "/C=US/ST=Oregon/L=Portland/O=Company Name/OU=Org/CN=192.168.0.101" -out server.crt -days 365
 
 const express = require("express");
 const path = require("path");
@@ -11,7 +11,7 @@ const options = {
 };
 
 const server = require("https").createServer(options, app);
-const io = require("socket.io")(uks);
+const io = require("socket.io")(server);
 
 app.use(express.static(path.join(__dirname, "../public")));
 
@@ -53,4 +53,7 @@ io.on("connection", (socket) => {
 
 server.listen(process.env.PORT || 3000, "0.0.0.0", () => {
   console.log("listening on *:3000");
+  
 });
+
+
