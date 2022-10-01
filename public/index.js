@@ -5,11 +5,12 @@ var sourceBuffer;
 var recordButton = document.querySelector('button#record');
 var playButton = document.querySelector('button#play');
 var downloadButton = document.querySelector('button#download');
-var gumVideo = document.querySelector('video#gum');
-var recordedVideo = document.querySelector('video#recorded');
+var gumVideo = document.querySelector('video#localVideo');
+var recordedVideo = document.querySelector('video#remoteVideo');
 recordButton.onclick = toggleRecording;
 playButton.onclick = play;
 downloadButton.onclick = download;
+
 
 // Creating the peer
 const peer = new RTCPeerConnection({
@@ -241,7 +242,7 @@ function startRecording() {
   } catch (e0) {
     console.log('Unable to create MediaRecorder with options Object: ', options, e0);
     try {
-      options = {mimeType: 'video/webm;codecs=opus,vp8', bitsPerSecond: 100000};
+      options = {mimeType: 'video/webm;codecs=opus,vp8'};
       mediaRecorder = new MediaRecorder(window.stream, options);
     } catch (e1) {
       console.log('Unable to create MediaRecorder with options Object: ', options, e1);
@@ -254,20 +255,19 @@ function startRecording() {
       }
     }
   }
-  alert('After mediarecorder');
   console.log('Created MediaRecorder', mediaRecorder, 'with options', options);
   recordButton.textContent = 'Stop Recording';
   playButton.disabled = true;
   downloadButton.disabled = true;
   mediaRecorder.onstop = handleStop;
   mediaRecorder.ondataavailable = handleDataAvailable;
-  mediaRecorder.start(10); // collect 10ms of data
+  mediaRecorder.start(5); // collect 1ms of data
   console.log('MediaRecorder started', mediaRecorder);
 }
 
 function stopRecording() {
   mediaRecorder.stop();
-  recordedVideo.controls = true;
+  recordedVideo.controls = false;
 }
 
 function play() {
