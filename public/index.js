@@ -8,7 +8,7 @@ var sourceBuffer;
 var recordButton = document.querySelector('button#record');
 var playButton = document.querySelector('button#play');
 var downloadButton = document.querySelector('button#download');
-var gumVideo = document.querySelector('video#localVideo');
+var myVideo = document.querySelector('video#localVideo');
 var recordedVideo = document.querySelector('video#remoteVideo');
 recordButton.onclick = toggleRecording;
 playButton.onclick = play;
@@ -201,7 +201,7 @@ socket.on("connect", handleSocketConnected);
 function successCallback(stream) {
   console.log('getUserMedia() got stream: ', stream);
   window.stream = stream;
-  gumVideo.srcObject = stream;
+  myVideo.srcObject = stream;
 }
 
 function errorCallback(error) {
@@ -238,14 +238,14 @@ function toggleRecording() {
 
 // The nested try blocks will be simplified when Chrome 47 moves to Stable
 function startRecording() {
-  var options = {mimeType: 'video/webm;codecs=opus,vp9', bitsPerSecond: 100000};
+  var options = {mimeType: 'video/webm;codecs=opus,vp8'};
   recordedBlobs = [];
   try {
     mediaRecorder = new MediaRecorder(window.stream, options);
   } catch (e0) {
     console.log('Unable to create MediaRecorder with options Object: ', options, e0);
     try {
-      options = {mimeType: 'video/webm;codecs=opus,vp8'};
+      options = {mimeType: 'video/webm;codecs=opus,vp9'};
       mediaRecorder = new MediaRecorder(window.stream, options);
     } catch (e1) {
       console.log('Unable to create MediaRecorder with options Object: ', options, e1);
@@ -264,7 +264,7 @@ function startRecording() {
   downloadButton.disabled = true;
   mediaRecorder.onstop = handleStop;
   mediaRecorder.ondataavailable = handleDataAvailable;
-  mediaRecorder.start(5); // collect 1ms of data
+  mediaRecorder.start(5); // collect 5ms of data
   console.log('MediaRecorder started', mediaRecorder);
 }
 

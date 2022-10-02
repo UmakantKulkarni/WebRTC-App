@@ -11,8 +11,8 @@ https://askubuntu.com/a/261467/1246619
 const all_args = process.argv;
 console.log("all_args ", all_args);
 
-server_ip = all_args[2]
-server_port = parseInt(all_args[3])
+const server_ip = all_args[2]
+const server_port = parseInt(all_args[3])
 
 const express = require("express");
 const path = require("path");
