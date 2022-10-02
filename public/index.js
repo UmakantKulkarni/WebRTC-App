@@ -16,13 +16,29 @@ downloadButton.onclick = download;
 
 
 // Creating the peer
-const peer = new RTCPeerConnection({
+var ICE_config= {
   iceServers: [
     {
       urls: "stun:stun.stunprotocol.org",
     },
-  ],
-});
+    {
+      urls: "turn:128.110.218.254:3478",
+      username: "umakant",
+      credential: "umakant",
+    },
+    {
+      urls: "turn:openrelay.metered.ca:443",
+      username: "openrelayproject",
+      credential: "openrelayproject",
+    },
+    {
+      urls: "turn:openrelay.metered.ca:443?transport=tcp",
+      username: "openrelayproject",
+      credential: "openrelayproject",
+    },
+  ]
+};
+const peer = new RTCPeerConnection(ICE_config);
 
 // Connecting to socket
 const socket = io(server_url);
@@ -241,16 +257,16 @@ function startRecording() {
   var options = {mimeType: 'video/webm;codecs=opus,vp8'};
   recordedBlobs = [];
   try {
-    mediaRecorder = new MediaRecorder(window.stream, options);
+    mediaRecorder = new MediaRecorder(document.querySelector("#remoteVideo").srcObject, options);
   } catch (e0) {
     console.log('Unable to create MediaRecorder with options Object: ', options, e0);
     try {
       options = {mimeType: 'video/webm;codecs=opus,vp9'};
-      mediaRecorder = new MediaRecorder(window.stream, options);
+      mediaRecorder = new MediaRecorder(document.querySelector("#remoteVideo").srcObject, options);
     } catch (e1) {
       console.log('Unable to create MediaRecorder with options Object: ', options, e1);
       try {
-        mediaRecorder = new MediaRecorder(window.stream);
+        mediaRecorder = new MediaRecorder(document.querySelector("#remoteVideo").srcObject);
       } catch (e2) {
         alert('MediaRecorder is not supported by this browser.');
         console.log('Unable to create MediaRecorder', e2);
