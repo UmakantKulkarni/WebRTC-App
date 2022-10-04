@@ -11,3 +11,5 @@ To run the example:
  Once the server is running, open https://localhost:3000 in 2 separate tabs in your favourite browser.
  
  Select ID of the user and click call.
+
+Forked from https://github.com/TechSivaram/WebRTC-Simple
