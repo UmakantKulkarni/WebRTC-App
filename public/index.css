@@ -25,6 +25,18 @@
   background: linear-gradient(90deg, rgb(110, 42, 255) 0%, rgb(148, 98, 255) 100%);
 }
 
+.stats-box {
+  position:absolute;
+  width: 450px;
+  height: 110px;
+  border: 1px solid black;
+  overflow-y: scroll;
+  overflow-x: auto;
+  right:25%;
+  left:50%;
+  bottom:0.5%;
+}
+
 .local-video {
   position: fixed;
   right: 1px;

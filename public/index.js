@@ -39,6 +39,7 @@ var ICE_config= {
   ]
 };
 const peer = new RTCPeerConnection(ICE_config);
+statsInterval = setInterval(getConnectionStats, 1000);
 
 // Connecting to socket
 const socket = io(server_url);
@@ -310,4 +311,22 @@ function download() {
   }, 100);
 }
 
+function getConnectionStats() {
+  peer.getStats(null).then((stats) => {
+    let statsOutput = "";
+    //let statsConsoleOutput = ""
 
+    //https://developer.mozilla.org/en-US/docs/Web/API/RTCStats/type
+    stats.forEach((report) => {
+      if ((report.type === "inbound-rtp" || report.type === "outbound-rtp") && (report.kind === "video" || report.kind === "audio")) {
+        Object.keys(report).forEach((statName) => {
+          statsOutput += `<strong>"${statName}":</strong> "${report[statName]}"<br>\n`;
+          //statsConsoleOutput += `"${statName}":"${report[statName]}"\n`;
+        });
+      }
+    });
+    //console.log(statsConsoleOutput)
+
+    document.querySelector(".stats-box").innerHTML = statsOutput;
+  });
+}
