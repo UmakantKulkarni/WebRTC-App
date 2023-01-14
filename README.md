@@ -6,7 +6,7 @@ To run the example:
  
  or if you use npm:
  
- `npm i && npm run dev`
+ `npm i && npm run dev 192.168.0.102 3000`
  
  Once the server is running, open https://localhost:3000 in 2 separate tabs in your favourite browser.
  

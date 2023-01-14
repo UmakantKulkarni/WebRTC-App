@@ -15,8 +15,18 @@ playButton.onclick = play;
 downloadButton.onclick = download;
 
 
+/* 5-tuple per media-trac; bundle policy:
+https://www.rfc-editor.org/rfc/rfc8834
+https://developer.mozilla.org/en-US/docs/Web/API/RTCPeerConnection/RTCPeerConnection
+https://stackoverflow.com/questions/57794305/how-to-change-webrtc-rtcpmuxpolicy
+https://webrtcstandards.info/sdp-bundle/
+https://www.rfc-editor.org/rfc/rfc8835.pdf
+*/
+
 // Creating the peer
 var ICE_config= {
+  bundlePolicy: 'max-compat',
+  rtcpMuxPolicy: 'require',
   iceServers: [
     {
       urls: "stun:stun.stunprotocol.org",
@@ -318,12 +328,13 @@ function getConnectionStats() {
 
     //https://developer.mozilla.org/en-US/docs/Web/API/RTCStats/type
     stats.forEach((report) => {
-      if ((report.type === "inbound-rtp" || report.type === "outbound-rtp") && (report.kind === "video" || report.kind === "audio")) {
+      console.log(report)
+      /*if ((report.type === "inbound-rtp" || report.type === "outbound-rtp") && (report.kind === "video" || report.kind === "audio")) {
         Object.keys(report).forEach((statName) => {
           statsOutput += `<strong>"${statName}":</strong> "${report[statName]}"<br>\n`;
           //statsConsoleOutput += `"${statName}":"${report[statName]}"\n`;
         });
-      }
+      }*/
     });
     //console.log(statsConsoleOutput)
 
