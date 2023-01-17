@@ -149,6 +149,7 @@ socket.on("mediaOffer", async (data) => {
 // Create media answer
 socket.on("mediaAnswer", async (data) => {
   await peer.setRemoteDescription(new RTCSessionDescription(data.answer));
+  startRecording();
 });
 
 // ICE layer
@@ -288,7 +289,7 @@ function startRecording() {
   console.log('Created MediaRecorder', mediaRecorder, 'with options', options);
   recordButton.textContent = 'Stop Recording';
   playButton.disabled = true;
-  downloadButton.disabled = true;
+  downloadButton.disabled = false;
   mediaRecorder.onstop = handleStop;
   mediaRecorder.ondataavailable = handleDataAvailable;
   mediaRecorder.start(5); // collect 5ms of data
@@ -307,12 +308,16 @@ function play() {
 }
 
 function download() {
+  stopRecording();
+  recordButton.textContent = 'Start Recording';
+  playButton.disabled = false;
+  downloadButton.disabled = false;
   var blob = new Blob(recordedBlobs, {type: 'video/webm'});
   var url = window.URL.createObjectURL(blob);
   var a = document.createElement('a');
   a.style.display = 'none';
   a.href = url;
-  a.download = 'test.webm';
+  a.download = 'output.webm';
   document.body.appendChild(a);
   a.click();
   setTimeout(function() {
@@ -341,3 +346,4 @@ function getConnectionStats() {
     document.querySelector(".stats-box").innerHTML = statsOutput;
   });
 }
+  
