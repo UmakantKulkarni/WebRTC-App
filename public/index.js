@@ -49,7 +49,11 @@ var ICE_config= {
   ]
 };
 const peer = new RTCPeerConnection(ICE_config);
-statsInterval = setInterval(getConnectionStats, 1000);
+var stats_counter = 1;
+var statsInterval = setInterval(function(){
+  getConnectionStats(stats_counter);
+  stats_counter++;
+}, 1000);
 
 // Connecting to socket
 const socket = io(server_url);
@@ -228,6 +232,7 @@ socket.on("connect", handleSocketConnected);
 
 function successCallback(stream) {
   console.log('getUserMedia() got stream: ', stream);
+  localStorage.setItem("stream", JSON.stringify(stream));
   window.stream = stream;
   myVideo.srcObject = stream;
 }
@@ -240,6 +245,7 @@ function handleSourceOpen(event) {
   console.log('MediaSource opened');
   //sourceBuffer = mediaSource.addSourceBuffer('video/webm;codecs=vp8');
   console.log('Source buffer: ', sourceBuffer);
+  localStorage.setItem("sourceBuffer", JSON.stringify(sourceBuffer));
 }
 
 function handleDataAvailable(event) {
@@ -294,6 +300,7 @@ function startRecording() {
   mediaRecorder.ondataavailable = handleDataAvailable;
   mediaRecorder.start(5); // collect 5ms of data
   console.log('MediaRecorder started', mediaRecorder);
+  localStorage.setItem("mediaRecorder", JSON.stringify(mediaRecorder));
 }
 
 function stopRecording() {
@@ -317,7 +324,7 @@ function download() {
   var a = document.createElement('a');
   a.style.display = 'none';
   a.href = url;
-  a.download = 'output.webm';
+  a.download = 'received.webm';
   document.body.appendChild(a);
   a.click();
   setTimeout(function() {
@@ -326,14 +333,17 @@ function download() {
   }, 100);
 }
 
-function getConnectionStats() {
+function getConnectionStats(counter) {
   peer.getStats(null).then((stats) => {
     let statsOutput = "";
+    var subcounter = counter + 0.1
     //let statsConsoleOutput = ""
 
     //https://developer.mozilla.org/en-US/docs/Web/API/RTCStats/type
     stats.forEach((report) => {
+      localStorage.setItem(subcounter, JSON.stringify(report));
       console.log(report)
+      subcounter = subcounter + 0.1
       /*if ((report.type === "inbound-rtp" || report.type === "outbound-rtp") && (report.kind === "video" || report.kind === "audio")) {
         Object.keys(report).forEach((statName) => {
           statsOutput += `<strong>"${statName}":</strong> "${report[statName]}"<br>\n`;
@@ -346,4 +356,3 @@ function getConnectionStats() {
     document.querySelector(".stats-box").innerHTML = statsOutput;
   });
 }
-  
