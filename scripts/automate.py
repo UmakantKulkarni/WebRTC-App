@@ -28,11 +28,15 @@ ENABLE_VIDEO_DOWNLOAD = 1
 ENABLE_SENDER_WEBRTC_STATS = 0
 ENABLE_RECEIVER_WEBRTC_STATS = 1
 SLEEP_TIME = 5
-CALL_DURATION = 17
-WEBRTC_URI = "https://192.168.0.75:3000/"
+CALL_DURATION = 60
+WEBRTC_URI = "https://128.110.219.84:3000/"
 EXECUTABLE_PATH = '/usr/local/bin/geckodriver'
 CHROME_DRIVER = '/usr/local/bin/chromedriver'
+VIDEO_FILE = "/Users/umakantkulkarni/Library/CloudStorage/OneDrive-purdue.edu/Research/JuniperProject/Spring2023/person_talking.y4m"
+AUDIO_FILE = "/Users/umakantkulkarni/Library/CloudStorage/OneDrive-purdue.edu/Research/JuniperProject/Spring2023/person_talking_audio.wav"
+#VIDEO_FILE = "/Users/umakantkulkarni/Downloads/test.y4m"
 #https://stackoverflow.com/questions/55697221/firefox-selenium-python-wont-open-a-webrtc-stream
+#chrome audio does not work - https://stackoverflow.com/questions/50774560/chrome-speech-recognition-webkitspeechrecognition-not-accepting-input-of-fake
 
 #Sample y4m files - https://media.xiph.org/video/derf/y4m/
 
@@ -57,7 +61,8 @@ def chrome_sender():
     chrome_options.add_argument("--allow-file-access")
     chrome_options.add_argument("--use-fake-ui-for-media-stream")
     chrome_options.add_argument("--use-fake-device-for-media-stream")
-    chrome_options.add_argument(r"--use-file-for-fake-video-capture=/Users/umakantkulkarni/Downloads/test.y4m")
+    chrome_options.add_argument(r"--use-file-for-fake-video-capture={}".format(VIDEO_FILE))
+    chrome_options.add_argument(r"--use-file-for-fake-audio-capture={}".format(AUDIO_FILE))
 
     chrome_service = Service(CHROME_DRIVER, log_path=os.path.devnull)
     driver = Chrome(options=chrome_options, service=chrome_service,service_log_path=None)
@@ -107,7 +112,8 @@ def chrome_receiver():
     chrome_options.add_argument("--allow-file-access")
     chrome_options.add_argument("--use-fake-ui-for-media-stream")
     chrome_options.add_argument("--use-fake-device-for-media-stream")
-    chrome_options.add_argument(r"--use-file-for-fake-video-capture=/Users/umakantkulkarni/Downloads/test.y4m")
+    chrome_options.add_argument(r"--use-file-for-fake-video-capture={}".format(VIDEO_FILE))
+    chrome_options.add_argument(r"--use-file-for-fake-audio-capture={}".format(AUDIO_FILE))
 
     chrome_service = Service(CHROME_DRIVER, log_path=os.path.devnull)
     driver = Chrome(options=chrome_options, service=chrome_service,service_log_path=None)
