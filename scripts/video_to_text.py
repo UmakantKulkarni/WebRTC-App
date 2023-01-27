@@ -3,10 +3,10 @@
 import cv2
 import pytesseract
 
-x, y, w, h = 0, 0, 200, 60
+
 vid_text = []
 
-def image_2_text(frame):
+def image_2_text(frame, x, y, w, h):
     #print(getText(frame))
     # Convert the frame to grayscale
     #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -29,8 +29,9 @@ def run():
 
     #https://stackoverflow.com/a/58984370/12865444
     # Set the frame width and height
-    #frame_width = int(video.get(3))
+    frame_width = int(video.get(3))
     #frame_height = int(video.get(4))
+    x, y, w, h = frame_width - 450, 40, 440, 60
 
     while True:
         # Read a frame from the video
@@ -40,7 +41,7 @@ def run():
         if not ret:
             break
 
-        image_2_text(frame)
+        image_2_text(frame,x, y, w, h)
         # Exit the program when the 'q' key is pressed
         if cv2.waitKey(25) & 0xFF == ord('q'):
             break

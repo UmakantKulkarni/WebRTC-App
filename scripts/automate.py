@@ -20,13 +20,12 @@ ENABLE_SENDER_WEBRTC_STATS = 0
 ENABLE_RECEIVER_WEBRTC_STATS = 1
 SLEEP_TIME = 2
 CALL_DURATION = 300
-WEBRTC_URI = "https://192.168.6.23:3000/"
+WEBRTC_URI = "https://128.110.219.84:3000/"
 EXECUTABLE_PATH = '/usr/local/bin/geckodriver'
 CHROME_DRIVER = '/usr/local/bin/chromedriver'
 VIDEO_FILE = "/home/kulkarnu/experiments/transmitted_videos/video10/person_talking.y4m"
 AUDIO_FILE = "/home/kulkarnu/experiments/transmitted_videos/video10/person_talking_audio.wav"
-DOWNLOAD_DIR = "/home/kulkarnu/Downloads"
-# VIDEO_FILE = "/Users/umakantkulkarni/Downloads/test.y4m"
+DOWNLOAD_DIR = "/Users/umakantkulkarni/Downloads"
 # https://stackoverflow.com/questions/55697221/firefox-selenium-python-wont-open-a-webrtc-stream
 # chrome audio does not work - https://stackoverflow.com/questions/50774560/chrome-speech-recognition-webkitspeechrecognition-not-accepting-input-of-fake
 
@@ -43,7 +42,7 @@ def chrome_sender(log_filename="webrtc_sender_stats.log"):
     chrome_options.add_argument('ignore-certificate-errors')
     # chrome_options.add_experimental_option("prefs", { \
     # "profile.default_content_settings.popups": 0,
-    # "download.default_directory": DOWNLOAD_DIR
+    # "download.default_directory": DOWNLOAD_DIR,
     # "profile.default_content_setting_values.media_stream_mic": 1,
     # "profile.default_content_setting_values.media_stream_camera": 1,
     # "profile.default_content_setting_values.geolocation": 1,
@@ -99,11 +98,11 @@ def chrome_receiver(log_filename="webrtc_receiver_stats.log"):
         "prefs",
         {
             "profile.default_content_settings.popups": 0,
-            "download.default_directory": DOWNLOAD_DIR
-            # "profile.default_content_setting_values.media_stream_mic": 1,
-            # "profile.default_content_setting_values.media_stream_camera": 1,
-            # "profile.default_content_setting_values.geolocation": 1,
-            # "profile.default_content_setting_values.notifications": 1
+            "download.default_directory": DOWNLOAD_DIR,
+            #"profile.default_content_setting_values.media_stream_mic": 1,
+            #"profile.default_content_setting_values.media_stream_camera": 1,
+            #"profile.default_content_setting_values.geolocation": 1,
+            #"profile.default_content_setting_values.notifications": 1
         })
     chrome_options.add_argument("--allow-file-access-from-files")
     chrome_options.add_argument("--allow-file-access")

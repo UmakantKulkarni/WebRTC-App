@@ -53,7 +53,7 @@ var stats_counter = 1;
 var statsInterval = setInterval(function(){
   getConnectionStats(stats_counter);
   stats_counter++;
-}, 1000);
+}, 4000);
 
 // Connecting to socket
 const socket = io(server_url);
