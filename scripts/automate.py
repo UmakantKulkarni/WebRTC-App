@@ -18,11 +18,11 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 ENABLE_VIDEO_DOWNLOAD = 1
 ENABLE_SENDER_WEBRTC_STATS = 0
 ENABLE_RECEIVER_WEBRTC_STATS = 1
-SLEEP_TIME = 2
-CALL_DURATION = 300
-WEBRTC_URI = "https://128.110.219.84:3000/"
+SLEEP_TIME = 3
+CALL_DURATION = 215
 EXECUTABLE_PATH = '/usr/local/bin/geckodriver'
 CHROME_DRIVER = '/usr/local/bin/chromedriver'
+WEBRTC_URI = "https://128.110.219.84:3000/"
 VIDEO_FILE = "/home/kulkarnu/experiments/transmitted_videos/video10/person_talking.y4m"
 AUDIO_FILE = "/home/kulkarnu/experiments/transmitted_videos/video10/person_talking_audio.wav"
 DOWNLOAD_DIR = "/Users/umakantkulkarni/Downloads"
@@ -30,6 +30,20 @@ DOWNLOAD_DIR = "/Users/umakantkulkarni/Downloads"
 # chrome audio does not work - https://stackoverflow.com/questions/50774560/chrome-speech-recognition-webkitspeechrecognition-not-accepting-input-of-fake
 
 # Sample y4m files - https://media.xiph.org/video/derf/y4m/
+
+
+def download_wait(path_to_downloads):
+    seconds = 0
+    dl_wait = True
+    while dl_wait and seconds < 120:
+        time.sleep(1)
+        dl_wait = False
+        for fname in os.listdir(path_to_downloads):
+            if fname.endswith('.crdownload'):
+                dl_wait = True
+        seconds += 1
+    print("Waited {} seconds for download to finish".format(seconds))
+    return seconds
 
 
 def chrome_sender(log_filename="webrtc_sender_stats.log"):
@@ -40,14 +54,19 @@ def chrome_sender(log_filename="webrtc_sender_stats.log"):
     chrome_options.add_argument("start-maximized")
     chrome_options.add_argument("--disable-extensions")
     chrome_options.add_argument('ignore-certificate-errors')
-    # chrome_options.add_experimental_option("prefs", { \
-    # "profile.default_content_settings.popups": 0,
-    # "download.default_directory": DOWNLOAD_DIR,
-    # "profile.default_content_setting_values.media_stream_mic": 1,
-    # "profile.default_content_setting_values.media_stream_camera": 1,
-    # "profile.default_content_setting_values.geolocation": 1,
-    # "profile.default_content_setting_values.notifications": 1
-    # })
+    #chrome_options.add_argument("--headless=chrome")
+    #chrome_options.add_argument("window-size=1920,1080")
+    #chrome_options.add_experimental_option("prefs", { \
+    #"profile.default_content_settings.popups": 0,
+    #"download.default_directory": DOWNLOAD_DIR,
+    #"download.prompt_for_download": False,
+    #"download.directory_upgrade": True,
+    #"safebrowsing.enabled": True
+    #"profile.default_content_setting_values.media_stream_mic": 1,
+    #"profile.default_content_setting_values.media_stream_camera": 1,
+    #"profile.default_content_setting_values.geolocation": 1,
+    #"profile.default_content_setting_values.notifications": 1
+    #})
     chrome_options.add_argument("--allow-file-access-from-files")
     chrome_options.add_argument("--allow-file-access")
     chrome_options.add_argument("--use-fake-ui-for-media-stream")
@@ -94,16 +113,20 @@ def chrome_receiver(log_filename="webrtc_receiver_stats.log"):
     chrome_options.add_argument("start-maximized")
     chrome_options.add_argument("--disable-extensions")
     chrome_options.add_argument('ignore-certificate-errors')
-    chrome_options.add_experimental_option(
-        "prefs",
-        {
-            "profile.default_content_settings.popups": 0,
-            "download.default_directory": DOWNLOAD_DIR,
-            #"profile.default_content_setting_values.media_stream_mic": 1,
-            #"profile.default_content_setting_values.media_stream_camera": 1,
-            #"profile.default_content_setting_values.geolocation": 1,
-            #"profile.default_content_setting_values.notifications": 1
-        })
+    #chrome_options.add_argument("--headless=chrome")
+    #chrome_options.add_argument("window-size=1920,1080")
+    chrome_options.add_experimental_option("prefs", { \
+    #"profile.default_content_settings.popups": 0,
+
+    "download.default_directory": DOWNLOAD_DIR,
+    "download.prompt_for_download": False,
+    "download.directory_upgrade": True,
+    "safebrowsing.enabled": True
+    #"profile.default_content_setting_values.media_stream_mic": 1,
+    #"profile.default_content_setting_values.media_stream_camera": 1,
+    #"profile.default_content_setting_values.geolocation": 1,
+    #"profile.default_content_setting_values.notifications": 1
+    })
     chrome_options.add_argument("--allow-file-access-from-files")
     chrome_options.add_argument("--allow-file-access")
     chrome_options.add_argument("--use-fake-ui-for-media-stream")
@@ -130,6 +153,8 @@ def chrome_receiver(log_filename="webrtc_receiver_stats.log"):
 
     if ENABLE_VIDEO_DOWNLOAD:
         driver.find_element(By.XPATH, '//*[@id="download"]').click()
+        download_wait(DOWNLOAD_DIR)
+        #time.sleep(5)
     if ENABLE_RECEIVER_WEBRTC_STATS:
         op = driver.execute_script("return window.localStorage;")
         for key, value in op.items():
@@ -198,6 +223,16 @@ def firefox_sender():
 
 
 if __name__ == "__main__":
+    p1 = Process(target=chrome_sender)
+    p1.start()
+    p2 = Process(target=chrome_receiver)
+    time.sleep(SLEEP_TIME)
+    p2.start()
+    p1.join()
+    p2.join()
+
+
+def uk1():
     parser = argparse.ArgumentParser(
         __doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('--mode', '-m')

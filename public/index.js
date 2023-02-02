@@ -32,11 +32,6 @@ var ICE_config= {
       urls: "stun:stun.stunprotocol.org",
     },
     {
-      urls: "turn:128.110.218.254:3478",
-      username: "umakant",
-      credential: "umakant",
-    },
-    {
       urls: "turn:openrelay.metered.ca:443",
       username: "openrelayproject",
       credential: "openrelayproject",
