@@ -1,7 +1,12 @@
 
 const server_url = document.URL
+var server_host = window.location.protocol + "//" + window.location.host;
+var server_path = window.location.pathname.split('/')[1]; 
 console.log("server_url ", server_url);
+console.log("server_host ", server_host);
+console.log("server_path ", server_path);
 
+var qs;
 var mediaRecorder;
 var recordedBlobs;
 var sourceBuffer;
@@ -51,7 +56,7 @@ var statsInterval = setInterval(function(){
 }, 4000);
 
 // Connecting to socket
-const socket = io(server_url);
+const socket = io(server_host);
 
 const onSocketConnected = async () => {
   //var mediaSource = new MediaSource();
@@ -269,17 +274,23 @@ function toggleRecording() {
 function startRecording() {
   var options = {mimeType: 'video/webm;codecs=opus,vp8'};
   recordedBlobs = [];
+  if (server_path == "sender") {
+    qs = "#localVideo"
+  } else {
+    qs = "#remoteVideo"
+  }
+  console.log('qs is', qs)
   try {
-    mediaRecorder = new MediaRecorder(document.querySelector("#remoteVideo").srcObject, options);
+    mediaRecorder = new MediaRecorder(document.querySelector(qs).srcObject, options);
   } catch (e0) {
     console.log('Unable to create MediaRecorder with options Object: ', options, e0);
     try {
       options = {mimeType: 'video/webm;codecs=opus,vp9'};
-      mediaRecorder = new MediaRecorder(document.querySelector("#remoteVideo").srcObject, options);
+      mediaRecorder = new MediaRecorder(document.querySelector(qs).srcObject, options);
     } catch (e1) {
       console.log('Unable to create MediaRecorder with options Object: ', options, e1);
       try {
-        mediaRecorder = new MediaRecorder(document.querySelector("#remoteVideo").srcObject);
+        mediaRecorder = new MediaRecorder(document.querySelector(qs).srcObject);
       } catch (e2) {
         alert('MediaRecorder is not supported by this browser.');
         console.log('Unable to create MediaRecorder', e2);
@@ -319,7 +330,7 @@ function download() {
   var a = document.createElement('a');
   a.style.display = 'none';
   a.href = url;
-  a.download = 'received.webm';
+  a.download = server_path+'.webm';
   document.body.appendChild(a);
   a.click();
   setTimeout(function() {

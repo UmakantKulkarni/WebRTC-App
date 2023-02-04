@@ -28,6 +28,9 @@ const server = require("https").createServer(options, app);
 const io = require("socket.io")(server);
 
 app.use(express.static(path.join(__dirname, "../public")));
+app.use('/sender',express.static(path.join(__dirname, "../public")));
+app.use('/receiver',express.static(path.join(__dirname, "../public")));
+
 
 let connectedUsers = [];
 

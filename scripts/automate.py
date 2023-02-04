@@ -19,7 +19,7 @@ ENABLE_VIDEO_DOWNLOAD = 1
 ENABLE_SENDER_WEBRTC_STATS = 0
 ENABLE_RECEIVER_WEBRTC_STATS = 1
 SLEEP_TIME = 3
-CALL_DURATION = 215
+CALL_DURATION = 60
 EXECUTABLE_PATH = '/usr/local/bin/geckodriver'
 CHROME_DRIVER = '/usr/local/bin/chromedriver'
 WEBRTC_URI = "https://128.110.219.84:3000/"
@@ -56,17 +56,17 @@ def chrome_sender(log_filename="webrtc_sender_stats.log"):
     chrome_options.add_argument('ignore-certificate-errors')
     #chrome_options.add_argument("--headless=chrome")
     #chrome_options.add_argument("window-size=1920,1080")
-    #chrome_options.add_experimental_option("prefs", { \
+    chrome_options.add_experimental_option("prefs", { \
     #"profile.default_content_settings.popups": 0,
-    #"download.default_directory": DOWNLOAD_DIR,
-    #"download.prompt_for_download": False,
-    #"download.directory_upgrade": True,
-    #"safebrowsing.enabled": True
+    "download.default_directory": DOWNLOAD_DIR,
+    "download.prompt_for_download": False,
+    "download.directory_upgrade": True,
+    "safebrowsing.enabled": True
     #"profile.default_content_setting_values.media_stream_mic": 1,
     #"profile.default_content_setting_values.media_stream_camera": 1,
     #"profile.default_content_setting_values.geolocation": 1,
     #"profile.default_content_setting_values.notifications": 1
-    #})
+    })
     chrome_options.add_argument("--allow-file-access-from-files")
     chrome_options.add_argument("--allow-file-access")
     chrome_options.add_argument("--use-fake-ui-for-media-stream")
@@ -87,8 +87,13 @@ def chrome_sender(log_filename="webrtc_sender_stats.log"):
 
     driver.find_element(By.XPATH, '//*[@id="cam"]').click()
     driver.find_element(By.XPATH, '//*[@id="mic"]').click()
+    time.sleep(1)
+    driver.find_element(By.XPATH, '//*[@id="record"]').click()
     time.sleep(CALL_DURATION)
 
+    if ENABLE_VIDEO_DOWNLOAD:
+        driver.find_element(By.XPATH, '//*[@id="download"]').click()
+        download_wait(DOWNLOAD_DIR)
     if ENABLE_SENDER_WEBRTC_STATS:
         webrtc_stats = {}
         op = driver.execute_script("return window.localStorage;")
@@ -117,7 +122,6 @@ def chrome_receiver(log_filename="webrtc_receiver_stats.log"):
     #chrome_options.add_argument("window-size=1920,1080")
     chrome_options.add_experimental_option("prefs", { \
     #"profile.default_content_settings.popups": 0,
-
     "download.default_directory": DOWNLOAD_DIR,
     "download.prompt_for_download": False,
     "download.directory_upgrade": True,
