@@ -17,6 +17,15 @@ var recordedVideo = document.querySelector("video#remoteVideo");
 recordButton.onclick = toggleRecording;
 playButton.onclick = play;
 downloadButton.onclick = download;
+const constraints = {
+  audio: true,
+  video: {
+    width: { min: 640, ideal: 1920 },
+    height: { min: 360, ideal: 1080 },
+    aspectRatio: 16 / 9,
+    frameRate: { min: 29 },
+  },
+};
 
 /* 5-tuple per media-trac; bundle policy:
 https://www.rfc-editor.org/rfc/rfc8834
@@ -60,10 +69,6 @@ const socket = io(server_host);
 const onSocketConnected = async () => {
   //var mediaSource = new MediaSource();
   //mediaSource.addEventListener('sourceopen', handleSourceOpen, false);
-  const constraints = {
-    audio: true,
-    video: { width: { ideal: 1920 }, height: { ideal: 1080 } },
-  };
   //navigator.mediaDevices.getUserMedia(constraints).then(successCallback,errorCallback);
   const stream = await navigator.mediaDevices.getUserMedia(constraints);
   var vidTrack = stream.getVideoTracks();
@@ -81,10 +86,6 @@ let cameraButton = document.querySelector("#cam");
 let micButton = document.querySelector("#mic");
 
 shareButton.addEventListener("click", async () => {
-  const constraints = {
-    audio: true,
-    video: { width: { ideal: 1920 }, height: { ideal: 1080 } },
-  };
   const stream = await navigator.mediaDevices.getDisplayMedia(constraints);
   document.querySelector("#localVideo").srcObject = stream;
 
@@ -95,11 +96,6 @@ shareButton.addEventListener("click", async () => {
 });
 
 cameraButton.addEventListener("click", async () => {
-  const constraints = {
-    audio: true,
-    video: { width: { ideal: 1920 }, height: { ideal: 1080 } },
-  };
-
   if (cameraButton.textContent == "Camera On") {
     peer.getSenders().forEach((s) => {
       if (s.track && s.track.kind === "video") s.track.enabled = true;
@@ -114,11 +110,6 @@ cameraButton.addEventListener("click", async () => {
 });
 
 micButton.addEventListener("click", async () => {
-  const constraints = {
-    audio: true,
-    video: { width: { ideal: 1920 }, height: { ideal: 1080 } },
-  };
-
   if (micButton.textContent == "Mic On") {
     peer.getSenders().forEach((s) => {
       if (s.track && s.track.kind === "audio") s.track.enabled = true;
