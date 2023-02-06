@@ -18,12 +18,13 @@ recordButton.onclick = toggleRecording;
 playButton.onclick = play;
 downloadButton.onclick = download;
 const constraints = {
-  audio: true,
+  audio: {
+    echoCancellation: {exact: true}
+  },
   video: {
     width: { min: 640, ideal: 1920 },
     height: { min: 360, ideal: 1080 },
-    aspectRatio: 16 / 9,
-    frameRate: { min: 29 },
+    frameRate: { min: 28 },
   },
 };
 
@@ -60,7 +61,7 @@ var stats_counter = 1;
 var statsInterval = setInterval(function () {
   getConnectionStats(stats_counter);
   stats_counter++;
-}, 4000);
+}, 1000);
 
 // Connecting to socket
 const socket = io(server_host);
