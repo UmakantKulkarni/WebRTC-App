@@ -15,11 +15,11 @@ from selenium.webdriver.common.by import By
 # from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 
-ENABLE_VIDEO_DOWNLOAD = 1
+ENABLE_VIDEO_DOWNLOAD = 0
 ENABLE_SENDER_WEBRTC_STATS = 0
-ENABLE_RECEIVER_WEBRTC_STATS = 1
+ENABLE_RECEIVER_WEBRTC_STATS = 0
 SLEEP_TIME = 3
-CALL_DURATION = 60
+CALL_DURATION = 600
 EXECUTABLE_PATH = '/usr/local/bin/geckodriver'
 CHROME_DRIVER = '/usr/local/bin/chromedriver'
 WEBRTC_URI = "https://128.110.219.84:3000/"
@@ -55,7 +55,7 @@ def chrome_sender(log_filename="webrtc_sender_stats.log"):
     chrome_options.add_argument("--disable-extensions")
     chrome_options.add_argument('ignore-certificate-errors')
     #chrome_options.add_argument("--headless=chrome")
-    #chrome_options.add_argument("window-size=1920,1080")
+    chrome_options.add_argument("window-size=1920,1080")
     chrome_options.add_experimental_option("prefs", { \
     #"profile.default_content_settings.popups": 0,
     "download.default_directory": DOWNLOAD_DIR,
@@ -82,7 +82,7 @@ def chrome_sender(log_filename="webrtc_sender_stats.log"):
                     service_log_path=None)
 
     # get method to launch the URL
-    driver.get(WEBRTC_URI)
+    driver.get(WEBRTC_URI+"sender/")
     time.sleep(SLEEP_TIME)
 
     driver.find_element(By.XPATH, '//*[@id="cam"]').click()
@@ -93,6 +93,7 @@ def chrome_sender(log_filename="webrtc_sender_stats.log"):
 
     if ENABLE_VIDEO_DOWNLOAD:
         driver.find_element(By.XPATH, '//*[@id="download"]').click()
+        time.sleep(SLEEP_TIME)
         download_wait(DOWNLOAD_DIR)
     if ENABLE_SENDER_WEBRTC_STATS:
         webrtc_stats = {}
@@ -119,7 +120,7 @@ def chrome_receiver(log_filename="webrtc_receiver_stats.log"):
     chrome_options.add_argument("--disable-extensions")
     chrome_options.add_argument('ignore-certificate-errors')
     #chrome_options.add_argument("--headless=chrome")
-    #chrome_options.add_argument("window-size=1920,1080")
+    chrome_options.add_argument("window-size=1920,1080")
     chrome_options.add_experimental_option("prefs", { \
     #"profile.default_content_settings.popups": 0,
     "download.default_directory": DOWNLOAD_DIR,
@@ -146,7 +147,7 @@ def chrome_receiver(log_filename="webrtc_receiver_stats.log"):
                     service_log_path=None)
 
     # get method to launch the URL
-    driver.get(WEBRTC_URI)
+    driver.get(WEBRTC_URI+"receiver/")
     time.sleep(SLEEP_TIME)
 
     driver.find_element(By.XPATH, '//*[@id="cam"]').click()
@@ -157,6 +158,7 @@ def chrome_receiver(log_filename="webrtc_receiver_stats.log"):
 
     if ENABLE_VIDEO_DOWNLOAD:
         driver.find_element(By.XPATH, '//*[@id="download"]').click()
+        time.sleep(SLEEP_TIME)
         download_wait(DOWNLOAD_DIR)
         #time.sleep(5)
     if ENABLE_RECEIVER_WEBRTC_STATS:
