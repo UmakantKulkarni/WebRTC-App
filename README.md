@@ -19,4 +19,4 @@ To run the example:
  
  Select ID of the user and click call.
 
-Forked from https://github.com/TechSivaram/WebRTC-Simple
+Forked from https://github.com/TechSivaram/WebRTC-Simple and modified based on https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/record
