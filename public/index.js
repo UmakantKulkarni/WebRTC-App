@@ -322,9 +322,10 @@ function toggleRecording() {
   }
 }
 
+//https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/record
 // The nested try blocks will be simplified when Chrome 47 moves to Stable
 function startRecording() {
-  var options = { mimeType: "video/webm;codecs=opus,vp8" };
+  var options = { mimeType: "video/webm;codecs=opus,h264" };
   recordedBlobs = [];
   if (server_path == "sender") {
     qs = "#localVideo";
