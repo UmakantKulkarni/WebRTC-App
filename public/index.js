@@ -145,7 +145,7 @@ socket.on("mediaOffer", async (data) => {
     if (/^a=fmtp:\d*/.test(str)) {
       arr[i] =
         str +
-        ";x-google-max-bitrate=10000000;x-google-min-bitrate=0;x-google-start-bitrate=6000";
+        ";x-google-max-bitrate=10000000;x-google-min-bitrate=1;x-google-start-bitrate=6000";
     } else if (/^a=mid:(1|video)/.test(str)) {
       arr[i] += "\r\nb=AS:10000";
     }
@@ -161,7 +161,7 @@ socket.on("mediaOffer", async (data) => {
     if (/^a=fmtp:\d*/.test(str)) {
       arr[i] =
         str +
-        ";x-google-max-bitrate=10000000;x-google-min-bitrate=0;x-google-start-bitrate=6000";
+        ";x-google-max-bitrate=10000000;x-google-min-bitrate=1;x-google-start-bitrate=6000";
     } else if (/^a=mid:(1|video)/.test(str)) {
       arr[i] += "\r\nb=AS:10000";
     }
@@ -200,7 +200,7 @@ socket.on("mediaAnswer", async (data) => {
     if (/^a=fmtp:\d*/.test(str)) {
       arr[i] =
         str +
-        ";x-google-max-bitrate=10000000;x-google-min-bitrate=0;x-google-start-bitrate=6000";
+        ";x-google-max-bitrate=10000000;x-google-min-bitrate=1;x-google-start-bitrate=6000";
     } else if (/^a=mid:(1|video)/.test(str)) {
       arr[i] += "\r\nb=AS:10000";
     }
