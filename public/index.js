@@ -42,6 +42,11 @@ var ICE_config = {
   rtcpMuxPolicy: "require",
   iceServers: [
     {
+      urls: "turn:10.0.1.3",
+      username: "mininet",
+      credential: "mininet",
+    },
+    {
       urls: "stun:stun.stunprotocol.org",
     },
     {
