@@ -42,7 +42,7 @@ var ICE_config = {
   rtcpMuxPolicy: "require",
   iceServers: [
     {
-      urls: "turn:10.0.1.3",
+      urls: "turn:10.0.0.3",
       username: "mininet",
       credential: "mininet",
     },
