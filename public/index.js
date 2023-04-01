@@ -47,6 +47,11 @@ var ICE_config = {
       credential: "mininet",
     },
     {
+      urls: "turn:192.168.6.23",
+      username: "computer",
+      credential: "computer",
+    },
+    {
       urls: "stun:stun.stunprotocol.org",
     },
     {
