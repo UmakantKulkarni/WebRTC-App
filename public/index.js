@@ -424,9 +424,11 @@ function getConnectionStats(counter) {
 
     //https://developer.mozilla.org/en-US/docs/Web/API/RTCStats/type
     stats.forEach((report) => {
-      localStorage.setItem(subcounter, JSON.stringify(report));
-      console.log(report);
-      subcounter = subcounter + 0.1;
+      if ((report.type === "inbound-rtp" || report.type === "outbound-rtp") && (report.kind === "video" || report.kind === "audio")) {
+        localStorage.setItem(subcounter, JSON.stringify(report));
+        console.log(report);
+        subcounter = subcounter + 0.1;
+      }
       /*if ((report.type === "inbound-rtp" || report.type === "outbound-rtp") && (report.kind === "video" || report.kind === "audio")) {
         Object.keys(report).forEach((statName) => {
           statsOutput += `<strong>"${statName}":</strong> "${report[statName]}"<br>\n`;
