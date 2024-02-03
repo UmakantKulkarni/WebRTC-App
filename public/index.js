@@ -277,6 +277,8 @@ function errorCallback(error) {
   console.log("navigator.getUserMedia error: ", error);
 }
 
+// https://stackoverflow.com/a/61110867/12865444
+// https://github.com/webrtc/samples/blob/gh-pages/src/content/peerconnection/bandwidth/js/main.js
 function handle_sdp(oadata) {
   let sdp = oadata.sdp.split("\r\n"); //convert to an concatenable array
   let new_sdp = "";
