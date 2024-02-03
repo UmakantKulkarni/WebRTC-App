@@ -19,7 +19,7 @@ playButton.onclick = play;
 downloadButton.onclick = download;
 const constraints = {
   audio: {
-    echoCancellation: {exact: true}
+    echoCancellation: { exact: true },
   },
   video: {
     width: { min: 640, ideal: 1920 },
@@ -145,35 +145,17 @@ callButton.addEventListener("click", async () => {
 //Change SDP to allow max bitrate - https://stackoverflow.com/a/57674478/12865444
 // Create media offer
 socket.on("mediaOffer", async (data) => {
-  var arr = data.offer.sdp.split("\r\n");
-  arr.forEach((str, i) => {
-    if (/^a=fmtp:\d*/.test(str)) {
-      arr[i] =
-        str +
-        ";x-google-max-bitrate=10000000;x-google-min-bitrate=1;x-google-start-bitrate=6000";
-    } else if (/^a=mid:(1|video)/.test(str)) {
-      arr[i] += "\r\nb=AS:10000";
-    }
-  });
+  let offer_sdp = handle_sdp(data.offer);
   sdp = new RTCSessionDescription({
     type: "offer",
-    sdp: arr.join("\r\n"),
+    sdp: offer_sdp,
   });
   await peer.setRemoteDescription(new RTCSessionDescription(sdp));
   const peerAnswer = await peer.createAnswer();
-  var arr = peerAnswer.sdp.split("\r\n");
-  arr.forEach((str, i) => {
-    if (/^a=fmtp:\d*/.test(str)) {
-      arr[i] =
-        str +
-        ";x-google-max-bitrate=10000000;x-google-min-bitrate=1;x-google-start-bitrate=6000";
-    } else if (/^a=mid:(1|video)/.test(str)) {
-      arr[i] += "\r\nb=AS:10000";
-    }
-  });
+  let answer_sdp = handle_sdp(peerAnswer);
   sdp = new RTCSessionDescription({
     type: "answer",
-    sdp: arr.join("\r\n"),
+    sdp: answer_sdp,
   });
   await peer.setLocalDescription(new RTCSessionDescription(sdp));
 
@@ -200,21 +182,13 @@ socket.on("mediaAnswer", async (data) => {
     console.log('After parameters: ', parameters);
   });
   */
-  var arr = data.answer.sdp.split("\r\n");
-  arr.forEach((str, i) => {
-    if (/^a=fmtp:\d*/.test(str)) {
-      arr[i] =
-        str +
-        ";x-google-max-bitrate=10000000;x-google-min-bitrate=1;x-google-start-bitrate=6000";
-    } else if (/^a=mid:(1|video)/.test(str)) {
-      arr[i] += "\r\nb=AS:10000";
-    }
-  });
+  let answer_sdp = handle_sdp(data.answer);
   sdp = new RTCSessionDescription({
     type: "answer",
-    sdp: arr.join("\r\n"),
+    sdp: answer_sdp,
   });
-  await peer.setRemoteDescription(new RTCSessionDescription(sdp));
+  //await peer.setRemoteDescription(new RTCSessionDescription(sdp));
+  peer.setRemoteDescription(new RTCSessionDescription(sdp));
   startRecording();
 });
 
@@ -301,6 +275,36 @@ function successCallback(stream) {
 
 function errorCallback(error) {
   console.log("navigator.getUserMedia error: ", error);
+}
+
+function handle_sdp(oadata) {
+  let sdp = oadata.sdp.split("\r\n"); //convert to an concatenable array
+  let new_sdp = "";
+  let position = null;
+  sdp = sdp.slice(0, -1); //remove the last comma ','
+  for (let i = 0; i < sdp.length; i++) {
+    //look if exists already a b=AS:XXX line
+    if (sdp[i].match(/b=AS:/)) {
+      position = i; //mark the position
+    }
+  }
+  if (position) {
+    sdp.splice(position, 1); //remove if exists
+  }
+  for (let i = 0; i < sdp.length; i++) {
+    if (sdp[i].match(/m=video/)) {
+      //modify and add the new lines for video
+      new_sdp += sdp[i] + "\r\n" + "b=AS:" + "100000" + "\r\n";
+    } else {
+      if (sdp[i].match(/m=audio/)) {
+        //modify and add the new lines for audio
+        new_sdp += sdp[i] + "\r\n" + "b=AS:" + "100000" + "\r\n";
+      } else {
+        new_sdp += sdp[i] + "\r\n";
+      }
+    }
+  }
+  return new_sdp; //return the new sdp
 }
 
 function handleSourceOpen(event) {
@@ -424,7 +428,10 @@ function getConnectionStats(counter) {
 
     //https://developer.mozilla.org/en-US/docs/Web/API/RTCStats/type
     stats.forEach((report) => {
-      if ((report.type === "inbound-rtp" || report.type === "outbound-rtp") && (report.kind === "video" || report.kind === "audio")) {
+      if (
+        (report.type === "inbound-rtp" || report.type === "outbound-rtp") &&
+        (report.kind === "video" || report.kind === "audio")
+      ) {
         localStorage.setItem(subcounter, JSON.stringify(report));
         console.log(report);
         subcounter = subcounter + 0.1;
