@@ -187,8 +187,8 @@ socket.on("mediaAnswer", async (data) => {
     type: "answer",
     sdp: answer_sdp,
   });
-  //await peer.setRemoteDescription(new RTCSessionDescription(sdp));
-  peer.setRemoteDescription(new RTCSessionDescription(sdp));
+  await peer.setRemoteDescription(new RTCSessionDescription(sdp));
+  //peer.setRemoteDescription(new RTCSessionDescription(sdp));
   startRecording();
 });
 
