@@ -18,6 +18,11 @@ recordButton.onclick = toggleRecording;
 playButton.onclick = play;
 downloadButton.onclick = download;
 const constraints = {
+  audio: true,
+  video: true
+};
+/*
+const constraints = {
   audio: {
     echoCancellation: { exact: true },
   },
@@ -27,6 +32,7 @@ const constraints = {
     frameRate: { min: 28 },
   },
 };
+*/
 
 /* 5-tuple per media-trac; bundle policy:
 https://www.rfc-editor.org/rfc/rfc8834
@@ -67,6 +73,40 @@ var ICE_config = {
   ],
 };
 const peer = new RTCPeerConnection(ICE_config);
+
+// Event handler for ICE connection state changes
+peer.oniceconnectionstatechange = function() {
+  console.log(`ICE Connection State has changed to: ${peer.iceConnectionState}`);
+  switch (peer.iceConnectionState) {
+    case 'disconnected':
+    case 'failed':
+      // Attempt to recover the connection
+      console.log('Attempting to restart ICE');
+      peer.restartIce();
+      break;
+  }
+};
+
+// Detecting significant packet loss or a failed connection
+peer.onicecandidateerror = function(event) {
+  console.error('ICE Candidate Error:', event);
+  if (event.errorCode >= 300 && event.errorCode <= 699) {
+    // Attempt to recover from certain errors
+    console.log('Network error detected, restarting ICE');
+    peer.restartIce();
+  }
+};
+
+// Handle new ICE candidates
+peer.onicecandidate = function(event) {
+  if (event.candidate) {
+    console.log('New ICE Candidate:', event.candidate);
+  } else {
+    // No more candidates will be found.
+    console.log('All ICE candidates have been received.');
+  }
+};
+
 var stats_counter = 1;
 var statsInterval = setInterval(function () {
   getConnectionStats(stats_counter);
@@ -189,7 +229,7 @@ socket.on("mediaAnswer", async (data) => {
   });
   await peer.setRemoteDescription(new RTCSessionDescription(sdp));
   //peer.setRemoteDescription(new RTCSessionDescription(sdp));
-  startRecording();
+  //startRecording();
 });
 
 // ICE layer
