@@ -464,29 +464,39 @@ function download() {
 
 function getConnectionStats(counter) {
   peer.getStats(null).then((stats) => {
-    let statsOutput = "";
-    var subcounter = counter + 0.1;
-    //let statsConsoleOutput = ""
+    const statsToSend = [];
 
-    //https://developer.mozilla.org/en-US/docs/Web/API/RTCStats/type
     stats.forEach((report) => {
       if (
         (report.type === "inbound-rtp" || report.type === "outbound-rtp") &&
         (report.kind === "video" || report.kind === "audio")
       ) {
-        localStorage.setItem(subcounter, JSON.stringify(report));
-        console.log(report);
-        subcounter = subcounter + 0.1;
-      }
-      /*if ((report.type === "inbound-rtp" || report.type === "outbound-rtp") && (report.kind === "video" || report.kind === "audio")) {
-        Object.keys(report).forEach((statName) => {
-          statsOutput += `<strong>"${statName}":</strong> "${report[statName]}"<br>\n`;
-          //statsConsoleOutput += `"${statName}":"${report[statName]}"\n`;
+        statsToSend.push({
+          timestamp: report.timestamp,
+          type: report.type,
+          kind: report.kind,
+          packetsSent: report.packetsSent || 0,
+          packetsReceived: report.packetsReceived || 0,
+          bytesSent: report.bytesSent || 0,
+          bytesReceived: report.bytesReceived || 0,
         });
-      }*/
+      }
     });
-    //console.log(statsConsoleOutput)
 
-    document.querySelector(".stats-box").innerHTML = statsOutput;
+    // Send stats to the server
+    fetch("/saveStats", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(statsToSend),
+    })
+      .then((response) => response.text())
+      .then((data) => {
+        console.log("Stats saved successfully:", data);
+      })
+      .catch((error) => {
+        console.error("Error saving stats:", error);
+      });
   });
 }
