@@ -9,6 +9,8 @@ To run the example:
  `npm i && npm run dev 192.168.0.102 3000`
  
  `nohup /usr/bin/node /home/kulkarnu/WebRTC-App/src/server.js 192.168.6.23 3000 &`
+
+ `/usr/bin/node /tmp/WebRTC-App/src/server.js 192.168.6.23 11001 /tmp/ws.json /tmp/ws.csv`
  
  Once the server is running, open 
  `
