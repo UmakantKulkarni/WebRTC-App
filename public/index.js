@@ -12,15 +12,19 @@ var sourceBuffer;
 var recordButton = document.querySelector("button#record");
 var playButton = document.querySelector("button#play");
 var downloadButton = document.querySelector("button#download");
-var myVideo = document.querySelector("video#localVideo");
-var recordedVideo = document.querySelector("video#remoteVideo");
+var myVideo = document.querySelector("video#localVideo"); // Keep the video element but won't be used for audio-only
+var recordedVideo = document.querySelector("video#remoteVideo"); // This can be used to play audio recordings
+
 recordButton.onclick = toggleRecording;
 playButton.onclick = play;
 downloadButton.onclick = download;
+
+// Updated constraints for audio-only
 const constraints = {
   audio: true,
-  video: true
+  video: false
 };
+
 /*
 const constraints = {
   audio: {
@@ -80,7 +84,6 @@ peer.oniceconnectionstatechange = function() {
   switch (peer.iceConnectionState) {
     case 'disconnected':
     case 'failed':
-      // Attempt to recover the connection
       console.log('Attempting to restart ICE');
       peer.restartIce();
       break;
@@ -102,7 +105,6 @@ peer.onicecandidate = function(event) {
   if (event.candidate) {
     console.log('New ICE Candidate:', event.candidate);
   } else {
-    // No more candidates will be found.
     console.log('All ICE candidates have been received.');
   }
 };
@@ -116,17 +118,17 @@ var statsInterval = setInterval(function () {
 // Connecting to socket
 const socket = io(server_host);
 
-//https://github.com/webrtc/samples/blob/gh-pages/src/content/getusermedia/resolution/js/main.js
+// Setup media for audio-only
 const onSocketConnected = async () => {
   //var mediaSource = new MediaSource();
   //mediaSource.addEventListener('sourceopen', handleSourceOpen, false);
   //navigator.mediaDevices.getUserMedia(constraints).then(successCallback,errorCallback);
   const stream = await navigator.mediaDevices.getUserMedia(constraints);
-  var vidTrack = stream.getVideoTracks();
-  vidTrack.forEach((track) => (track.enabled = false));
+  //var vidTrack = stream.getVideoTracks();
+  //vidTrack.forEach((track) => (track.enabled = false));
   var audioTrack = stream.getAudioTracks();
   audioTrack.forEach((track) => (track.enabled = false));
-  document.querySelector("#localVideo").srcObject = stream;
+  //document.querySelector("#localVideo").srcObject = stream;
   stream.getTracks().forEach((track) => peer.addTrack(track, stream));
   successCallback(stream);
 };
@@ -135,30 +137,6 @@ let callButton = document.querySelector("#call");
 let shareButton = document.querySelector("#share");
 let cameraButton = document.querySelector("#cam");
 let micButton = document.querySelector("#mic");
-
-shareButton.addEventListener("click", async () => {
-  const stream = await navigator.mediaDevices.getDisplayMedia(constraints);
-  document.querySelector("#localVideo").srcObject = stream;
-
-  peer.getSenders().forEach(async (s) => {
-    if (s.track && s.track.kind === "video")
-      await s.replaceTrack(stream.getTracks()[0]);
-  });
-});
-
-cameraButton.addEventListener("click", async () => {
-  if (cameraButton.textContent == "Camera On") {
-    peer.getSenders().forEach((s) => {
-      if (s.track && s.track.kind === "video") s.track.enabled = true;
-    });
-    cameraButton.textContent = "Camera Off";
-  } else {
-    peer.getSenders().forEach((s) => {
-      if (s.track && s.track.kind === "video") s.track.enabled = false;
-    });
-    cameraButton.textContent = "Camera On";
-  }
-});
 
 micButton.addEventListener("click", async () => {
   if (micButton.textContent == "Mic On") {
@@ -178,12 +156,10 @@ micButton.addEventListener("click", async () => {
 callButton.addEventListener("click", async () => {
   const localPeerOffer = await peer.createOffer();
   await peer.setLocalDescription(new RTCSessionDescription(localPeerOffer));
-
   sendMediaOffer(localPeerOffer);
 });
 
-//Change SDP to allow max bitrate - https://stackoverflow.com/a/57674478/12865444
-// Create media offer
+// Handle media offer
 socket.on("mediaOffer", async (data) => {
   let offer_sdp = handle_sdp(data.offer);
   sdp = new RTCSessionDescription({
@@ -206,7 +182,7 @@ socket.on("mediaOffer", async (data) => {
 //https://github.com/ant-media/Ant-Media-Server/wiki/How-to-improve-WebRTC-bit-rate%3F
 //https://developer.mozilla.org/en-US/docs/Web/API/RTCRtpEncodingParameters/maxBitrate
 // https://github.com/webrtc/samples/blob/gh-pages/src/content/peerconnection/bandwidth/js/main.js
-// Create media answer
+// Handle media answer
 socket.on("mediaAnswer", async (data) => {
   /*
   peer.getSenders().forEach((sender) => {
@@ -246,9 +222,10 @@ socket.on("remotePeerIceCandidate", async (data) => {
   }
 });
 
+// Handle received audio stream
 peer.addEventListener("track", (event) => {
   const [stream] = event.streams;
-  document.querySelector("#remoteVideo").srcObject = stream;
+  document.querySelector("#remoteVideo").srcObject = stream; // Use the video element to play audio
 });
 
 let selectedUser;
@@ -310,43 +287,34 @@ function successCallback(stream) {
   console.log("getUserMedia() got stream: ", stream);
   localStorage.setItem("stream", JSON.stringify(stream));
   window.stream = stream;
-  myVideo.srcObject = stream;
+  //myVideo.srcObject = stream;
 }
 
 function errorCallback(error) {
   console.log("navigator.getUserMedia error: ", error);
 }
 
-// https://stackoverflow.com/a/61110867/12865444
-// https://github.com/webrtc/samples/blob/gh-pages/src/content/peerconnection/bandwidth/js/main.js
 function handle_sdp(oadata) {
-  let sdp = oadata.sdp.split("\r\n"); //convert to an concatenable array
+  let sdp = oadata.sdp.split("\r\n");
   let new_sdp = "";
   let position = null;
-  sdp = sdp.slice(0, -1); //remove the last comma ','
+  sdp = sdp.slice(0, -1);
   for (let i = 0; i < sdp.length; i++) {
-    //look if exists already a b=AS:XXX line
     if (sdp[i].match(/b=AS:/)) {
-      position = i; //mark the position
+      position = i;
     }
   }
   if (position) {
-    sdp.splice(position, 1); //remove if exists
+    sdp.splice(position, 1);
   }
   for (let i = 0; i < sdp.length; i++) {
-    if (sdp[i].match(/m=video/)) {
-      //modify and add the new lines for video
+    if (sdp[i].match(/m=audio/)) {
       new_sdp += sdp[i] + "\r\n" + "b=AS:" + "100000" + "\r\n";
     } else {
-      if (sdp[i].match(/m=audio/)) {
-        //modify and add the new lines for audio
-        new_sdp += sdp[i] + "\r\n" + "b=AS:" + "100000" + "\r\n";
-      } else {
-        new_sdp += sdp[i] + "\r\n";
-      }
+      new_sdp += sdp[i] + "\r\n";
     }
   }
-  return new_sdp; //return the new sdp
+  return new_sdp;
 }
 
 function handleSourceOpen(event) {
@@ -367,6 +335,7 @@ function handleStop(event) {
   console.log("Recorded Blobs: ", recordedBlobs);
 }
 
+
 function toggleRecording() {
   if (recordButton.textContent === "Start Recording") {
     startRecording();
@@ -381,14 +350,14 @@ function toggleRecording() {
 //https://github.com/webrtc/samples/tree/gh-pages/src/content/getusermedia/record
 // The nested try blocks will be simplified when Chrome 47 moves to Stable
 function startRecording() {
-  var options = { mimeType: "video/webm;codecs=opus,h264" };
+  //var options = { mimeType: "video/webm;codecs=opus,h264" };
+  var options = { mimeType: "audio/webm;codecs=opus" }; // Changed to audio only
   recordedBlobs = [];
   if (server_path == "sender") {
-    qs = "#localVideo";
+    qs = "#localVideo"; // Still use the localVideo element even if it's audio only
   } else {
-    qs = "#remoteVideo";
+    qs = "#remoteVideo"; // Use remoteVideo to access audio stream for recording
   }
-  console.log("qs is", qs);
   try {
     mediaRecorder = new MediaRecorder(
       document.querySelector(qs).srcObject,
@@ -401,7 +370,8 @@ function startRecording() {
       e0
     );
     try {
-      options = { mimeType: "video/webm;codecs=opus,vp9" };
+      //options = { mimeType: "video/webm;codecs=opus,vp9" };
+      options = { mimeType: "audio/webm;codecs=opus" };
       mediaRecorder = new MediaRecorder(
         document.querySelector(qs).srcObject,
         options
@@ -448,7 +418,8 @@ function download() {
   recordButton.textContent = "Start Recording";
   playButton.disabled = false;
   downloadButton.disabled = false;
-  var blob = new Blob(recordedBlobs, { type: "video/webm" });
+  //var blob = new Blob(recordedBlobs, { type: "video/webm" });
+  var blob = new Blob(recordedBlobs, { type: "audio/webm" });
   var url = window.URL.createObjectURL(blob);
   var a = document.createElement("a");
   a.style.display = "none";
@@ -469,7 +440,7 @@ function getConnectionStats(counter) {
     stats.forEach((report) => {
       if (
         (report.type === "inbound-rtp" || report.type === "outbound-rtp") &&
-        (report.kind === "video" || report.kind === "audio")
+        report.kind === "audio"
       ) {
         statsToSend.push({
           timestamp: report.timestamp,
@@ -483,7 +454,6 @@ function getConnectionStats(counter) {
       }
     });
 
-    // Send stats to the server
     fetch("/saveStats", {
       method: "POST",
       headers: {

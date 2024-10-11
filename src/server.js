@@ -105,8 +105,6 @@ if (!fs.existsSync(csvFilePath)) {
     { id: 'timestamp', title: 'Timestamp' },
     { id: 'inbound_audio_jitter_avg', title: 'Inbound Audio Jitter Avg' },
     { id: 'inbound_audio_packetsLost_avg', title: 'Inbound Audio Packets Lost Avg' },
-    { id: 'inbound_video_packetsReceived_avg', title: 'Inbound Video Packets Received Avg' },
-    { id: 'outbound_video_packetsSent_avg', title: 'Outbound Video Packets Sent Avg' },
     { id: 'qoe', title: 'QoE' }
   ];
   // Write the header to the CSV file
@@ -133,8 +131,6 @@ const createCsvWriter = csvWriter.createObjectCsvWriter({
     { id: 'timestamp', title: 'Timestamp' },
     { id: 'inbound_audio_jitter_avg', title: 'Inbound Audio Jitter Avg' },
     { id: 'inbound_audio_packetsLost_avg', title: 'Inbound Audio Packets Lost Avg' },
-    { id: 'inbound_video_packetsReceived_avg', title: 'Inbound Video Packets Received Avg' },
-    { id: 'outbound_video_packetsSent_avg', title: 'Outbound Video Packets Sent Avg' },
     { id: 'qoe', title: 'QoE' }
   ]
 });
@@ -146,24 +142,18 @@ const previousStats = {};
 function computeQoE(data) {
   const inbound_audio_jitter_avg = data.inboundAudio?.jitter || 0;
   const inbound_audio_packetsLost_avg = data.inboundAudio?.packetsLost || 0;
-  const inbound_video_packetsReceived_avg = data.inboundVideo?.packetsReceived || 0;
-  const outbound_video_packetsSent_avg = data.outboundVideo?.packetsSent || 0;
 
   // QoE calculation using incremental values
   const qoe =
-    3.420 +
-    0.005 * outbound_video_packetsSent_avg -
+    3.420 -
     72.898 * inbound_audio_jitter_avg -
-    0.001 * inbound_audio_packetsLost_avg +
-    0.004 * inbound_video_packetsReceived_avg;
+    0.001 * inbound_audio_packetsLost_avg;
 
   return {
     ipAddress: data.ipAddress,
     timestamp: data.timestamp,
     inbound_audio_jitter_avg: inbound_audio_jitter_avg.toFixed(3),
     inbound_audio_packetsLost_avg: inbound_audio_packetsLost_avg.toFixed(3),
-    inbound_video_packetsReceived_avg: inbound_video_packetsReceived_avg.toFixed(3),
-    outbound_video_packetsSent_avg: outbound_video_packetsSent_avg.toFixed(3),
     qoe: qoe.toFixed(3),
   };
 }
@@ -171,21 +161,15 @@ function computeQoE(data) {
 // Function to compute the incremental stats (diff from the previous timestamp)
 function computeIncrementalStats(ip, report) {
   const currentStats = {
-    packetsSent: report.packetsSent || 0,
-    packetsReceived: report.packetsReceived || 0,
     packetsLost: report.packetsLost || 0
   };
 
   // Check if we have previous stats for this IP and kind
   const previous = previousStats[ip]?.[report.type]?.[report.kind] || {
-    packetsSent: 0,
-    packetsReceived: 0,
     packetsLost: 0
   };
 
   const incrementalStats = {
-    packetsSent: currentStats.packetsSent - previous.packetsSent,
-    packetsReceived: currentStats.packetsReceived - previous.packetsReceived,
     packetsLost: currentStats.packetsLost - previous.packetsLost
   };
 
@@ -209,9 +193,7 @@ function aggregateAndComputeQoE(statsArray) {
       groupedByTimestamp[timestamp] = {
         ipAddress,
         timestamp,
-        inboundAudio: null,
-        inboundVideo: null,
-        outboundVideo: null
+        inboundAudio: null
       };
     }
 
@@ -225,14 +207,6 @@ function aggregateAndComputeQoE(statsArray) {
         jitter: report.jitter || 0,
         packetsLost: incrementalStats.packetsLost || 0,
       };
-    } else if (type === "inbound-rtp" && kind === "video") {
-      group.inboundVideo = {
-        packetsReceived: incrementalStats.packetsReceived || 0,
-      };
-    } else if (type === "outbound-rtp" && kind === "video") {
-      group.outboundVideo = {
-        packetsSent: incrementalStats.packetsSent || 0,
-      };
     }
   });
 
@@ -240,7 +214,7 @@ function aggregateAndComputeQoE(statsArray) {
 
   // Compute QoE for timestamps where all blocks (audio/video, inbound/outbound) exist
   Object.values(groupedByTimestamp).forEach(group => {
-    if (group.inboundAudio && group.inboundVideo && group.outboundVideo) {
+    if (group.inboundAudio) {
       const qoeData = computeQoE(group);
       computedQoEData.push(qoeData);
     }
