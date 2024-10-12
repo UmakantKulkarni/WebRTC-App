@@ -450,6 +450,8 @@ function getConnectionStats(counter) {
           timestamp: report.timestamp,
           type: report.type,
           kind: report.kind,
+          jitter: report.jitter || 0,
+          packetsLost: report.packetsLost || 0,
           packetsSent: report.packetsSent || 0,
           packetsReceived: report.packetsReceived || 0,
           bytesSent: report.bytesSent || 0,
