@@ -464,6 +464,7 @@ function download() {
 
 function getConnectionStats(counter) {
   peer.getStats(null).then((stats) => {
+    var subcounter = counter + 0.1;
     const statsToSend = [];
 
     stats.forEach((report) => {
@@ -471,6 +472,9 @@ function getConnectionStats(counter) {
         (report.type === "inbound-rtp" || report.type === "outbound-rtp") &&
         (report.kind === "video" || report.kind === "audio")
       ) {
+        localStorage.setItem(subcounter, JSON.stringify(report));
+        console.log(report);
+        subcounter = subcounter + 0.1;
         statsToSend.push({
           timestamp: report.timestamp,
           type: report.type,
