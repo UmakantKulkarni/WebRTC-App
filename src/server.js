@@ -235,17 +235,23 @@ let lastProcessedTimestamp = null;
 
 // POST endpoint to receive WebRTC stats and save to JSON, process QoE
 app.post("/saveStats", (req, res) => {
-  const stats = req.body;
   const userIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
 
   try {
+    const stats = req.body;
+
+    // Validate if stats is a valid array of reports
+    if (!Array.isArray(stats)) {
+      throw new Error("Invalid stats format: Expected an array of stats");
+    }
+
     let statsArray = [];
 
     // Check if the file exists and read the current data
     if (fs.existsSync(statsFilePath)) {
       const data = fs.readFileSync(statsFilePath, 'utf8');
       if (data) {
-        statsArray = JSON.parse(data);
+        statsArray = JSON.parse(data); // Catch parsing errors here
       }
     }
 
@@ -254,12 +260,17 @@ app.post("/saveStats", (req, res) => {
     let newEntries = 0;
 
     stats.forEach(report => {
+      // Validate each report object
+      if (!report || typeof report !== "object") {
+        throw new Error("Invalid report format: Each report must be an object");
+      }
+
       // Only add data if it has a new timestamp
       if (currentTimestamp !== lastProcessedTimestamp) {
         statsArray.push({
           ...report,
           ipAddress: userIp,
-          timestamp: currentTimestamp
+          timestamp: currentTimestamp,
         });
         newEntries++;
       }
@@ -267,7 +278,6 @@ app.post("/saveStats", (req, res) => {
 
     // If no new data has been added, skip further processing
     if (newEntries === 0) {
-      //console.log("No new data to process.");
       return res.status(200).send("No new data to process.");
     }
 
@@ -278,16 +288,13 @@ app.post("/saveStats", (req, res) => {
     const qoeData = aggregateAndComputeQoE(statsArray);
 
     // Filter the QoE data by ensuring we only write new entries with non-empty data
-    const newQoEData = qoeData.filter(qoeEntry => {
+    const newQoEData = qoeData.filter((qoeEntry) => {
       return qoeEntry.timestamp === currentTimestamp && Object.keys(qoeEntry).length > 0;
     });
 
     // Write QoE data to CSV if new data exists
     if (newQoEData.length > 0) {
       writeToCsv(newQoEData);
-      //console.log("CSV updated with new QoE data.");
-    } else {
-      //console.log("No new QoE data to write to CSV.");
     }
 
     // Update the last processed timestamp
